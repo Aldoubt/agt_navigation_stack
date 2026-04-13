@@ -1,0 +1,4 @@
+geometry_msgs/PoseWithCovariance pose
+geometry_msgs/TwistWithCovariance velocity
+uint8 confidence
+string frame_id

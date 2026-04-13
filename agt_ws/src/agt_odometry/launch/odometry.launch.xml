@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Odometry Launch File -->
+  
+  <node pkg="agt_odometry" exec="odometry_node.py" name="odometry" output="screen">
+    <param name="update_frequency" value="20"/>
+    <param name="filter_type" value="ekf"/>  <!-- ekf or ukf -->
+    <param name="covariance_file" value="$(find-pkg-share agt_odometry)/config/covariance.yaml"/>
+  </node>
+
+  <!-- Static TF broadcast: map to odom -->
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="map_to_odom_link"
+        args="0 0 0 0 0 0 map odom"/>
+
+</launch>

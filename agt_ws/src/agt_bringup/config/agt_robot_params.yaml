@@ -1,0 +1,67 @@
+# AGT Robot Parameters
+
+# 文本内容AI生成还没修改一些基本的参数信息 基本都是占位符 需要根据实际情况修改
+
+# Robot physical parameters
+robot:
+  name: AGT_Robot
+  type: wheeled_platform
+  
+  # Size (m)
+  length: 0.8
+  width: 0.6
+  height: 0.5
+  
+  # Weight (kg)
+  mass: 50.0
+  
+  # Wheel config
+  wheel_radius: 0.1
+  wheel_base: 0.5  # Distance between left and right wheels
+  
+# Velocity limits
+velocity:
+  max_linear: 1.5  # m/s
+  max_angular: 1.0  # rad/s
+  min_linear: 0.0
+  min_angular: 0.0
+
+# Acceleration limits
+acceleration:
+  max_linear: 0.5  # m/s^2
+  max_angular: 0.5  # rad/s^2
+
+# Sensor configuration
+sensors:
+  lidar:
+    model: Livox Mid-360
+    frequency: 10  # Hz
+    range: 30  # m
+    
+  imu:
+    model: 
+    frequency:   # Hz
+    
+  camera:
+    model: 
+    frequency:   # Hz
+    resolution: 
+
+# Filter parameters
+filter:
+  type: ekf  # or ukf
+  process_noise: 0.01
+  measurement_noise: 0.05
+  
+# Localization parameters
+localization:
+  method: amcl  # or icp, rtk, rtab-map, qr-code
+  initial_pose_x: 0.0
+  initial_pose_y: 0.0
+  initial_pose_theta: 0.0
+  
+# Navigation parameters
+navigation:
+  goal_tolerance_xy: 0.1  # m
+  goal_tolerance_yaw: 0.1  # rad
+  max_replanning_time: 1.0  # s

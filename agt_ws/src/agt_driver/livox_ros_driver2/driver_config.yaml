@@ -1,0 +1,32 @@
+# Lidar driver configuration
+
+livox_driver:
+  # Device config
+  device_ip: 192.168.1.106
+  device_port: 65000
+  
+  # Network config
+  local_ip: 192.168.1.107
+  local_port: 55000
+  
+  # Data config
+  frame_id: lidar_link
+  data_type: 0  # 0: Cartesian, 1: Spherical
+  
+  # Coordinate system
+  coordinate_system: 1  # 0: Livox, 1: ROS Standard
+
+# IMU calibration
+imu_calib:
+  accel_scale: [1.0, 1.0, 1.0]
+  accel_bias: [0.0, 0.0, 0.0]
+  gyro_scale: [1.0, 1.0, 1.0]
+  gyro_bias: [0.0, 0.0, 0.0]
+
+# Camera calibration
+camera_calib:
+  camera_matrix:
+    - [500, 0, 320]
+    - [0, 500, 240]
+    - [0, 0, 1]
+  distortion: [0.1, -0.1, 0, 0]

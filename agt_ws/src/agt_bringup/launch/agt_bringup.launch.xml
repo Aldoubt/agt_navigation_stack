@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Robot description -->
+  <include file="$(find-pkg-share agt_acm_description)/launch/agt_robot_description.launch.py"/>
+
+  <!-- Chassis bridge -->
+  <node pkg="agt_chassis_bridge" exec="bridge_node.py" name="chassis_bridge"/>
+
+  <!-- Odometry -->
+  <node pkg="agt_odometry" exec="odometry_node.py" name="odometry"/>
+
+  <!-- TF broadcaster for static transforms -->
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="map_to_odom"
+        args="0 0 0 0 0 0 map odom">
+  </node>
+
+</launch>

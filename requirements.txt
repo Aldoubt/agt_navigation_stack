@@ -1,0 +1,30 @@
+# Python dependencies for AGT Navigation Stack
+# Python 3.10+
+
+# Core ROS 2 packages (managed via rosdep)
+# numpy
+# opencv-python
+# scipy
+
+# Development tools
+pytest>=7.0
+pytest-cov>=3.0
+flake8>=4.0
+black>=22.0
+mypy>=0.950
+pylint>=2.13
+
+# Data processing and visualization
+numpy>=1.21.0
+matplotlib>=3.4.0
+pandas>=1.3.0
+
+# Scientific computing
+scipy>=1.7.0
+scikit-learn>=1.0.0
+
+# Optimization
+scipy>=1.7.0
+
+# Visualization
+rviz

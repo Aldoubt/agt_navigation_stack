@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>agt_bringup</name>
+  <version>0.0.1</version>
+  <description>Main entry point for launching AGT navigation stack</description>
+  <maintainer email="dev@agt.com">AGT Dev Team</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>agt_common</exec_depend>
+  <exec_depend>agt_msgs</exec_depend>
+  <exec_depend>agt_chassis_bridge</exec_depend>
+  <exec_depend>agt_odometry</exec_depend>
+  <exec_depend>agt_location</exec_depend>
+  <exec_depend>agt_mapping_bringup</exec_depend>
+  <exec_depend>agt_nav2</exec_depend>
+  <exec_depend>agt_mission</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,23 @@
+# Gazebo simulation world configuration
+
+world:
+  scene_name: "agt_world"
+  gravity: [0, 0, -9.81]
+  
+# Physics engine
+physics:
+  engine: dart
+  step_size: 0.001
+  real_time_factor: 1.0
+  
+# Lighting
+light:
+  ambient_color: [0.3, 0.3, 0.3]
+  directional_light:
+    direction: [0.5, 0.5, 1.0]
+    color: [1, 1, 1]
+    
+# Ground plane
+ground_plane:
+  position: [0, 0, 0]
+  size: [100, 100, 0.5]

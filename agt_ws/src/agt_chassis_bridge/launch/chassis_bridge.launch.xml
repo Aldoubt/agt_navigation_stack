@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Chassis Bridge Launch File -->
+  
+  <node pkg="agt_chassis_bridge" exec="bridge_node.py" name="chassis_bridge" output="screen">
+    <param name="max_linear_vel" value="1.5"/>
+    <param name="max_angular_vel" value="1.0"/>
+  </node>
+
+</launch>

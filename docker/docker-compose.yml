@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  agt_nav:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: agt_navigation_stack
+    image: agt_nav:latest
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - ROS_DOMAIN_ID=0
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${HOME}/.Xauthority:/root/.Xauthority:rw
+      - ../agt_ws:/root/agt_ws
+    network_mode: host
+    stdin_open: true
+    tty: true
+    privileged: true

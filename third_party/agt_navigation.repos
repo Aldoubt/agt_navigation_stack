@@ -1,0 +1,33 @@
+repositories:
+  # ROS 2 Navigation Stack
+  navigation2:
+    type: git
+    url: https://github.com/ros-planning/navigation2.git
+    version: humble
+  
+  # SLAM and Localization repos
+  slam_toolbox:
+    type: git
+    url: https://github.com/StanleyInnovation/slam_toolbox.git
+    version: humble
+  
+  cartographer_ros:
+    type: git
+    url: https://github.com/cartographer-project/cartographer_ros.git
+    version: humble
+  
+  # Livox Lidar Driver
+  livox_ros_driver2:
+    type: git
+    url: https://github.com/Livox-SDK/livox_ros_driver2.git
+    version: master
+  
+  # ROS 2 Common
+  ros2_common_interfaces:
+    type: git
+    url: https://github.com/ros-infrastructure/ros2_common.git
+    version: humble
+
+  # 改图用的工具
+    https://www.gaituya.com/bianji/
+    
