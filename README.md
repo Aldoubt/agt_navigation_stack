@@ -1,119 +1,239 @@
 # agt_navigation_stack
 
-专门为AgroTech智能机械协会的同学提供一套标准的开发框架，提高开发与学习的效率
+面向 **AgroTech 智能机械协会** 的移动机器人导航开发框架。  
+目标是提供一套结构清晰、接口统一、便于复现与协作的标准化工程基础，以提升项目开发效率、调试效率与学习效率。
 
+---
+
+## 项目目标
+
+`agt_navigation_stack` 主要用于构建一套可持续演进的导航系统工程框架，覆盖以下核心能力：
+
+- 机器人模型与坐标系管理
+- 传感器驱动接入与数据预处理
+- 底盘通信与运动控制桥接
+- 里程计、定位、建图与导航集成
+- 仿真验证与实车部署
+- 参数调试、可视化与实验管理
+- 接口规范、开发规范与环境复现
+
+该仓库强调：
+
+- **统一目录结构**
+- **统一消息与接口规范**
+- **统一 TF / Topic 命名习惯**
+- **统一测试与部署流程**
+- **可复现、可维护、可扩展**
+
+---
+
+## 当前状态
+
+当前版本已完成以下基础内容的初步接入：
+
+- 第一版机器人 URDF 模型
+- 阿克曼底盘 CAN 通信与驱动文件
+
+后续工作将围绕导航链路打通、系统标准化与调试工具完善展开。
+
+---
+
+## 仓库结构
+
+```text
 AGT_navigation_stack/
-├── .github/ github平台相关的配置文件目录
-├── docs/  系统文档目录 包括整机架构设计与坐标系定义 TF树说明相关内容 topic接口说明
-           包依赖关系 开发规范 硬件接线说明 测试验证流程 
-├── specs/ 接口规范目录 
-├── scripts/ 脚本目录 辅助脚本 
-├── tools/ 开发与调试工具目录
-├── docker/ 环境复现目录
-├── third_party/ 第三方依赖说明与包装目录 放.repos文件 patch 封装说明 版本锁定说明
-├── datasets/    数据资产目录 小型测试数据 示例地图 参数测试基准数据 数据说明
-                 最好能固定一份固定测试的数据集
-├── agt_ws/src
+├── .github/                  # GitHub 平台相关配置
+├── docs/                     # 系统文档
+│   ├── 整机架构设计
+│   ├── 坐标系定义与 TF 树说明
+│   ├── Topic / Service / Action 接口说明
+│   ├── 包依赖关系
+│   ├── 开发规范
+│   ├── 硬件接线说明
+│   └── 测试验证流程
+├── specs/                    # 接口规范与协议说明
+├── scripts/                  # 辅助脚本
+├── tools/                    # 开发与调试工具
+├── docker/                   # 环境复现相关文件
+├── third_party/              # 第三方依赖说明与包装
+│   ├── .repos 文件
+│   ├── patch
+│   ├── 封装说明
+│   └── 版本锁定说明
+├── datasets/                 # 数据资产
+│   ├── 小型测试数据
+│   ├── 示例地图
+│   ├── 参数测试基准数据
+│   └── 数据说明
+└── agt_ws/
+    └── src/
+        ├── agt_acm_description/      # 机器人描述层
+        ├── agt_algorithm/            # 算法隔离层
+        │   ├── fastlio2/
+        │   ├── rtabmap/
+        │   ├── orb_slam3/
+        │   └── ...
+        ├── agt_bringup/              # 全系统编排层
+        │                             # 实车、建图、定位、导航、仿真、模式切换总 launch
+        ├── agt_chassis_base/         # 底盘基础通信层
+        │   ├── yhs_can_ctrl/
+        │   ├── yhs_can_interfaces/
+        │   └── 使用说明文档
+        ├── agt_chassis_bridge/       # 控制桥接层
+        │                             # 输入: /cmd_vel
+        │                             # 输出: /ctrl_cmd
+        ├── agt_common/               # 全项目通用基础库
+        │                             # 坐标系字符串常量、Topic 名称常量、公共工具函数
+        ├── agt_driver/               # 传感器驱动层
+        │   ├── livox_ros_driver2/    # 雷达驱动、launch、设备参数、基础说明
+        │   └── orbbec_sdk/           # 奥比中光相机驱动层
+        ├── agt_location/             # 全局定位层
+        │                             # map -> odom
+        │                             # 输出: /localization_state
+        │   ├── icp_relocalization/
+        │   ├── amcl/
+        │   ├── rtabmap_localization/
+        │   ├── rtk_localization/
+        │   ├── qrcode_relocalization/
+        │   └── ...
+        ├── agt_mapping_bringup/      # 建图启动层
+        │                             # 不同建图模式对应的 launch 文件
+        ├── agt_mission/              # 任务与状态机层
+        ├── agt_msgs/                 # 统一消息接口定义
+        │   ├── CtrlCmd.msg
+        │   ├── ChassisState.msg
+        │   ├── VehicleStatus.msg
+        │   └── LocalizationState.msg
+        ├── agt_nav2/                 # 导航配置层
+        │                             # 输入: /tf、/scan 或 PointCloud2
+        │                             # 关键坐标系: map、odom
+        │   ├── nav2_params.yaml
+        │   ├── planner 参数
+        │   ├── controller 参数
+        │   ├── costmap 参数
+        │   ├── behavior tree XML
+        │   └── map_server 配置
+        ├── agt_odometry/             # 连续运动估计层
+        │                             # odom -> base_link
+        │                             # EKF / UKF 等融合与滤波
+        ├── agt_sensor_proc/          # 传感器预处理层
+        │   ├── 点云滤波
+        │   ├── IMU 滤波
+        │   └── 多传感器时间同步与数据质量检查
+        ├── agt_sim_gazebo/           # Gazebo 仿真环境
+        │   ├── worlds/
+        │   └── ...
+        └── agt_tools_gui/            # 工具与可视化层
+                                      # 参数控制台、状态仪表盘、实验记录面板
+                                      # Topic 监控、TF 可视化辅助、地图资产管理辅助
 
-    /agt_acm_description 机器人描述层
+分层说明
+1. 描述层
 
-    /agt_algorithm 算法隔离层 
-        / fastlio2
-        / RTAB-Map
-        / ORB-SLAM 3
-        / 
+负责机器人模型、连杆结构、传感器外参、碰撞体与可视化模型的统一管理，为仿真、可视化、导航和控制提供一致的机器人描述基础。
 
-    /agt_bringup 全系统编排层
-        实车、建图、定位、导航、仿真、模式切换总launch   
-        
-    /agt_chassis_base 底盘基础通信层
-        /yhs_can_ctrl
-        /yhs_can_interfaces
-        agt_ws/src/agt_chassis_base/使用说明.doc
+2. 驱动层
 
-    /agt_chassis_bridge 控制桥接层
-        输入/cmd_vel
-        输出/ctrl_cmd
-        
-    /agt_common 全项目通用基础库 （GPT说要就放上来了）
-        坐标系字符串常量
-        topic名称常量
+负责各类硬件设备接入，包括激光雷达、相机、IMU、底盘设备等，并提供基础的设备参数配置与启动方式。
 
-    /agt_driver 传感器驱动层
-        /livox_ros_driver2 放雷达专用的launch 设备连接参数 基础驱动说明文档
-        /ORBBEC SDK 奥比中光相机驱动层
+3. 预处理层
 
-    /agt_location 全局定位层 map -> odom 输出/localization_state
-        /icp_relocalization
-        /amcl
-        /RTAB-Map localization mode
-        /rtk-location
-        /airdrop QR基于先验地图的重定位模式
-        其他全局定位接口
+负责传感器原始数据的轻量化处理，包括去噪、滤波、时间同步、数据质量检查与格式规范化。
 
-    /agt_mapping_bringup 建图启动层
-        不同版本的建图模式的launch文件
+4. 运动估计与定位层
 
-    /agt_mission 任务与状态机层 
-        
-    /agt_msgs 统一的消息接口定义 
-        ctrlcmd.msg
-        chassisState.msg
-        VehicleStatus.msg
-        LocalizationState.msg
-        
-    /agt_nav2 导航配置层
-        输入/tf /scan 或 PointCloud2
-        map，odom
-        nav2_params.yaml
-        planner 参数 
-        controller 参数 
-        costmap 参数 
-        behavior tree xml 
-        map_server 配置
+负责里程计估计、局部位姿跟踪与全局重定位，形成完整的位姿计算链路。
 
-    /agt_odometry 连续运动估计层  odom → base_link
-        ekf、ukf等对数据进行处理与滤波
-        
-        
-    /agt_sensor_proc 传感器预处理层
-        /点云滤波 减少杂波的影响
-        /IMU滤波 减少零漂与温漂的影响
-        /多传感器时间戳输出与数据质量的同步检查
+5. 导航与任务层
 
-        
-    /agt_sim_gazebo gazebo仿真环境的配置与使用
-        /world
-        /
+负责路径规划、轨迹跟踪、行为树、任务调度与状态机逻辑，实现从目标输入到执行输出的闭环流程。
 
-    /agt_tools_gui 工具与可视化层 参数控制台 + 状态仪表盘 + 实验记录面板
-        参数面板 
-        预设保存/加载 
-        调试 GUI 
-        topic 监控 
-        TF 可视化辅助 
-        地图资产管理辅助
+6. 编排与工具层
 
+负责系统级 launch 编排、模式切换、参数集中管理、调试 GUI 与实验记录支持。
 
+设计原则
+统一接口
 
-已经将第一版的urdf与阿克曼底盘的can通讯与驱动文件放入
+系统内部尽量使用统一的 Topic、消息、坐标系命名规范，减少模块之间的耦合成本。
 
-# 第一阶段
-    完成基本框架的搭建 讨论正确的框架内容与标准节点话题等的利用
-    完成传感器的初始化 正确的车辆外参标定 数据链的时间同步 
-    完成阿克曼速度节点的正确转化
+模块隔离
 
-    先跑通2D nav2的导航框架与gazebo传感器的正确使用 
-    完成测试调试台的gui的测试 能够快速启动节点 组装测试 并显示所有可调的参数保存对应的参数
+驱动、算法、导航、任务、仿真、工具等模块尽可能解耦，便于独立调试与替换。
 
-# 第二阶段
-    完成目标能够在rviz中正确显示高精度的urdf模型，也能够使用简化的模型
-    前端先用fastlio2算法估计局部位姿，不融合轮速传感器，使用ICP算法进行重定位 实现建图与导航
+优先可复现
 
-    swith-nav2模式 使用二维码识别与先验地图上实现稳定路径规划与导航
-    改进cartographer算法 在明白其原理后进行前处理 设立实验指标 进行参数优化与实验
-     
-# 第三阶段
-    在传感器数据输入进系统之前做轻量化处理，为数据赋予语义信息，并以此来实现创新
-    倾斜安装MID360，通过顶棚和地面的信息做重定位优化
+环境配置、第三方依赖、参数基线、测试数据尽量固定，确保实验结果可对比、可追踪、可复现。
+
+优先可验证
+
+每个模块应具备最小可运行验证路径，避免系统搭建初期过度耦合，降低调试复杂度。
+
+规划阶段
+第一阶段
+
+目标：完成基础框架搭建，打通 2D 导航最小可运行链路。
+
+主要任务
+完成整体工程目录与分层框架搭建
+明确标准节点、标准 Topic、标准 TF 关系与接口命名
+完成传感器初始化
+完成车辆外参标定
+完成数据链时间同步
+完成阿克曼速度控制节点的正确转换
+先跑通基于 Gazebo 的 2D Nav2 导航框架
+完成仿真传感器接入与基础验证
+完成调试测试台 GUI 的初版开发
+支持节点快速启动
+支持组合测试
+支持参数显示与调节
+支持参数保存与加载
+第二阶段
+
+目标：完成建图、重定位与导航链路增强，并逐步形成更稳定的实用方案。
+
+主要任务
+在 RViz 中正确显示高精度 URDF 模型与简化模型
+前端先使用 Fast-LIO2 估计局部位姿
+初期不融合轮速传感器
+使用 ICP 实现重定位
+实现建图与导航流程联调
+建立切换式导航模式
+基于二维码识别与先验地图实现稳定路径规划与导航
+深入理解 Cartographer 原理
+在理解算法原理基础上补充前处理模块
+建立实验评价指标
+开展参数优化与实验验证
+第三阶段
+
+目标：在现有导航系统基础上引入轻量化感知增强与语义信息，为后续创新功能提供支撑。
+
+主要任务
+在传感器数据进入系统前进行轻量化预处理
+为环境数据增加语义信息
+基于语义信息提升系统能力与研究创新空间
+尝试倾斜安装 MID360
+利用顶棚与地面结构信息优化重定位效果
+建议优先补充的文档
+
+为保证后续开发效率，建议优先在 docs/ 中补齐以下内容：
+
+系统总体架构图
+TF 树定义
+Topic / Service / Action 接口表
+坐标系命名规范
+底盘控制接口说明
+传感器外参与标定流程
+建图 / 定位 / 导航启动说明
+仿真测试流程
+参数管理规范
+提交与分支协作规范
+后续方向
+
+该仓库后续可进一步扩展为：
+
+面向协会内部成员的标准开发模板
+面向不同底盘与传感器组合的导航基线工程
+面向比赛与科研项目的复用型基础框架
+面向实车部署、仿真验证与实验记录的一体化平台
 
