@@ -13,52 +13,52 @@ map
 
 ## Frame Descriptions (坐标系描述)
 
-| Frame | Description | Parent | Type |
-|-------|-------------|--------|------|
-| map | Global fixed reference frame | - | Fixed |
-| odom | Odometry reference frame | map | Dynamic (TF broadcast) |
-| base_link | Robot main body | odom | Dynamic (TF broadcast) |
-| lidar_link | LiDAR sensor | base_link | Fixed (TF broadcast) |
-| camera_link | Camera sensor | base_link | Fixed (TF broadcast) |
-| imu_link | IMU sensor | base_link | Fixed (TF broadcast) |
+| Frame | 描述 | 父坐标系 | 类型 |
+|-------|------|----------|------|
+| map | 全局固定参考坐标系 | - | 固定 |
+| odom | 里程计参考坐标系 | map | 动态（通过 TF 广播） |
+| base_link | 机器人主体坐标系 | odom | 动态（通过 TF 广播） |
+| lidar_link | LiDAR 传感器坐标系 | base_link | 固定（通过 TF 广播） |
+| camera_link | 相机传感器坐标系 | base_link | 固定（通过 TF 广播） |
+| imu_link | IMU 传感器坐标系 | base_link | 固定（通过 TF 广播） |
 
 ## Transformation (变换关系)
 
 ### map -> odom
-- Published by: `agt_location` (localization node)
-- Frequency: 10 Hz
-- Represents: Global localization offset
+- 发布节点：`agt_location`（定位节点）
+- 发布频率：10 Hz
+- 含义：表示全局定位偏移量
 
 ### odom -> base_link
-- Published by: `agt_odometry` (odometry node)
-- Frequency: 20 Hz
-- Represents: Robot pose relative to odometry frame
+- 发布节点：`agt_odometry`（里程计节点）
+- 发布频率：20 Hz
+- 含义：表示机器人相对于 `odom` 坐标系的位姿
 
 ### base_link -> sensors
-- Published by: Static TF broadcasters at startup
-- Type: Fixed transforms
-- Contains: Sensor mounting offsets
+- 发布方式：启动时由静态 TF 广播器发布
+- 类型：固定变换
+- 内容：传感器安装位姿偏移
 
-## Usage in Code
+## Usage in Code (代码中的使用示例)
 
 ```python
 import tf2_ros
 from geometry_msgs.msg import TransformStamped
 
-# Lookup transform
+# 查询变换
 tf_buffer = tf2_ros.Buffer()
 listener = tf2_ros.TransformListener(tf_buffer)
 
-# Get transform from map to base_link
+# 获取从 map 到 base_link 的变换
 try:
     transform = tf_buffer.lookup_transform('map', 'base_link', rclpy.time.Time())
 except tf2_ros.TransformException:
-    # Handle exception
+    # 异常处理
     pass
 ```
 
 ## Parameters (参数设置)
 
-- **TF Lookup Timeout**: 5.0 seconds
-- **Update Frequency**: 20-100 Hz (topic dependent)
-- **Position Precision**: 0.001 m
+- **TF 查询超时**：5.0 秒
+- **更新频率**：20-100 Hz（取决于具体 topic）
+- **位置精度**：0.001 m
