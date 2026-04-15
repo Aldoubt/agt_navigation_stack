@@ -25,13 +25,13 @@ map
 ## Transformation (变换关系)
 
 ### map -> odom
-- 发布节点：`agt_location`（定位节点）
-- 发布频率：10 Hz
+- 当前状态：在现有 bringup / odometry launch 中由 `static_transform_publisher` 发布为静态零变换
+- 推荐配置：当启用 `agt_location` 且基于 MID360 点云做定位时，可按 5-10 Hz 动态发布，10 Hz 可与 MID360 典型点云帧率对齐
 - 含义：表示全局定位偏移量
 
 ### odom -> base_link
-- 发布节点：`agt_odometry`（里程计节点）
-- 发布频率：20 Hz
+- 目标发布节点：`agt_odometry`（里程计节点）
+- 推荐发布频率：不低于 30 Hz；对 30 Hz 阿克曼底盘应至少与底盘反馈/控制周期一致，最好由底盘反馈触发
 - 含义：表示机器人相对于 `odom` 坐标系的位姿
 
 ### base_link -> sensors
@@ -59,6 +59,7 @@ except tf2_ros.TransformException:
 
 ## Parameters (参数设置)
 
-- **TF 查询超时**：5.0 秒
-- **更新频率**：20-100 Hz（取决于具体 topic）
-- **位置精度**：0.001 m
+- **TF 查询超时**：建议 0.1-0.2 秒；不建议写成 5.0 秒这类过大的运行时容忍值
+- **`odom -> base_link` 更新频率**：建议 >= 30 Hz，并与阿克曼底盘反馈周期保持一致
+- **`map -> odom` 更新频率**：静态场景为 0 Hz；若由 MID360 点云定位驱动，建议 5-10 Hz，10 Hz 为常见配置
+- **数值表示分辨率**：0.001 m 可作为坐标数值分辨率，但不能视为整车实际定位精度

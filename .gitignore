@@ -1,6 +1,8 @@
 devel/
 logs/
+log/
 build/
+install/
 bin/
 lib/
 msg_gen/
@@ -51,5 +53,8 @@ qtcreator-*
 CATKIN_IGNORE
 
 # Local editor / assistant metadata
-.code
 .codex
+
+# ROS 2 / colcon runtime and build logs
+*.log
+*.log.*

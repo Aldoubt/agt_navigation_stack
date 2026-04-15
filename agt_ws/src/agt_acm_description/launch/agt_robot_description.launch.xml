@@ -1,14 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- AGT Robot Description Launch File -->
-  
-  <!-- Load URDF from parameter -->
-  <param name="robot_description" 
-         command="xacro $(find-pkg-share agt_acm_description)/urdf/agt_robot.urdf"/>
-
-  <!-- Publish static transforms -->
-  <node pkg="robot_state_publisher" exec="robot_state_publisher" name="robot_state_publisher">
-    <param name="use_sim_time" value="false"/>
-  </node>
-
+  <include file="$(find-pkg-share agt_acm_description)/launch/agt_robot_description.launch.py">
+    <arg name="use_sim_time" value="false"/>
+    <arg
+      name="rviz_config"
+      value="$(find-pkg-share agt_acm_description)/rviz/agt_robot_description.rviz"/>
+  </include>
 </launch>
