@@ -268,13 +268,6 @@ ros2 topic hz /livox/lidar
 - `publish.map_en: true`
 - `pcd_save.pcd_save_en: true`
 - `map_file_path: "/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pcd"`
-- `pcd_to_nav2_map.enable: true`
-
-开始建图前还有一个很重要的实测经验：
-
-- MID360 冷启动后不要立刻开始建图，建议先让设备运行一段时间，等待内部温度升到相对稳定后再开始建图
-- 如果设备温度还没上来就直接建图，实际使用中可能出现非常明显的漂移
-- 如果发现同一套参数有时正常、有时严重漂移，优先排查是否是在雷达未预热完成时开始采图
 
 推荐流程如下。
 
@@ -302,21 +295,19 @@ source install/setup.bash
 ros2 launch fast_lio agt_mid360.launch.py
 ```
 
-4. 建图完成后，在 FAST-LIO2 所在终端按 `Ctrl+C` 退出。当前工程已经修改为退出时自动保存地图到 `map_file_path`，并继续自动生成 Nav2 可用的 `pgm + yaml`，不需要再手动调用 `/map_save` 服务。
+4. 建图完成后，在 FAST-LIO2 所在终端按 `Ctrl+C` 退出。当前工程已经修改为退出时自动保存地图到 `map_file_path`，不需要再手动调用 `/map_save` 服务。
 
 5. 保存成功后，可在终端看到类似输出：
 
 ```bash
 SIGINT received, saving map to /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pcd...
-Map saved to /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pcd; Nav2 map saved to /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pgm and /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.yaml.
+Map saved to /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pcd
 ```
 
 6. 可选检查：
 
 ```bash
 ls -lh /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pcd
-ls -lh /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pgm
-ls -lh /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.yaml
 pcl_viewer /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pcd
 ```
 
@@ -325,7 +316,6 @@ pcl_viewer /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pcd
 - 是否实际启动了 `agt_mid360.launch.py`，而不是默认读取 `mid360.yaml` 的 `mapping.launch.py`
 - `publish.map_en` 是否为 `true`
 - `pcd_save.pcd_save_en` 是否为 `true`
-- `pcd_to_nav2_map.enable` 是否为 `true`
 - `map_file_path` 所在目录是否可写
 - 激光雷达和 IMU 是否已经正常输入，地图点云是否已经累计
 
@@ -412,14 +402,3 @@ MID360 驱动 → FAST-LIO2 出里程计/点云 → 生成可用地图 → 让 N
 - 面向比赛与科研项目的复用型基础框架
 - 面向实车部署、仿真验证与实验记录的一体化平台
 
-
-## 常用命令
-启动雷达与IMU：
-source ~/agt_navigation_stack/install/setup.bash
-ros2 launch livox_ros_driver2 msg_MID360_launch.py
-
-
-启动fastlio2可视化：
-
-source ~/agt_navigation_stack/install/setup.bash
-ros2 launch fast_lio agt_mid360.launch.py
