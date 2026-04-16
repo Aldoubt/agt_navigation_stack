@@ -1,0 +1,47 @@
+common:
+  lid_topic: "/livox/lidar"
+  imu_topic: "/livox/imu"
+  time_sync_en: false
+  time_offset_lidar_to_imu: 0.0
+
+preprocess:
+  # FAST-LIO official configs use lidar_type: 1 for Livox serial devices.
+  lidar_type: 1
+
+  # MID360 tuning varies across forks. Start conservatively here and validate
+  # against the actual FAST-LIO2 implementation you bring in.
+  scan_line: 4
+  blind: 0.5
+
+mapping:
+  # Initial IMU noise placeholders. Replace with calibrated values later.
+  acc_cov: 0.1
+  gyr_cov: 0.1
+  b_acc_cov: 0.0001
+  b_gyr_cov: 0.0001
+
+  # MID360 is a 360-degree LiDAR, so use a full horizontal FOV as the initial
+  # setting. Narrow this only if you intentionally crop the sensor FOV.
+  fov_degree: 360.0
+  det_range: 100.0
+
+  # First-pass integration strategy:
+  # start with identity rotation and zero translation, and evaluate whether
+  # the trajectory is stable before introducing refined LiDAR-IMU extrinsics.
+  extrinsic_est_en: false
+
+  # First-pass LiDAR pose in IMU frame.
+  extrinsic_T: [-0.011, -0.02329, 0.04412]
+  extrinsic_R: [1.0, 0.0, 0.0,
+                0.0, 1.0, 0.0,
+                0.0, 0.0, 1.0]
+
+publish:
+  path_en: true
+  scan_publish_en: true
+  dense_publish_en: true
+  scan_bodyframe_pub_en: true
+
+pcd_save:
+  pcd_save_en: true
+  interval: -1

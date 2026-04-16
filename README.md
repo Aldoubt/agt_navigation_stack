@@ -55,8 +55,8 @@ AGT_navigation_stack/
 ├── scripts/                  # 辅助脚本
 ├── tools/                    # 开发与调试工具
 ├── docker/                   # 环境复现相关文件
-├── third_party/              # 第三方依赖说明与包装
-│   ├── .repos 文件
+├── third_party/              # 第三方依赖来源、拉取清单与版本说明
+│   ├── agt_navigation.repos
 │   ├── patch
 │   ├── 封装说明
 │   └── 版本锁定说明
@@ -138,6 +138,16 @@ AGT_navigation_stack/
 ### 2. 驱动层
 负责各类硬件设备接入，包括激光雷达、相机、IMU、底盘设备等，并提供基础的设备参数配置与启动方式。
 
+当前约定中，`agt_ws/src/agt_driver/` 是驱动目录容器，用于按设备类型组织独立 ROS 包，而不是单独承担一个统一驱动节点。
+例如：
+
+- `agt_ws/src/agt_driver/livox_ros_driver2/`
+- `agt_ws/src/agt_driver/orbbec_sdk/`
+
+其中每个驱动子目录都应尽量保持为可被 `colcon` 独立发现、独立构建、独立启动的 ROS 包。
+
+`third_party/` 主要用于保存第三方源码来源信息、版本锁定信息和补丁说明，不再作为 Livox 驱动的主要开发位置。
+
 ### 3. 预处理层
 负责传感器原始数据的轻量化处理，包括去噪、滤波、时间同步、数据质量检查与格式规范化。
 
@@ -168,6 +178,80 @@ AGT_navigation_stack/
 
 ---
 
+## Livox MID360 说明
+
+### 目录位置
+当前 Livox 雷达驱动包位于：
+
+`agt_ws/src/agt_driver/livox_ros_driver2/`
+
+第三方拉取来源记录位于：
+
+`third_party/agt_navigation.repos`
+
+常用文件位置：
+
+- 启动文件：`agt_ws/src/agt_driver/livox_ros_driver2/launch_ROS2/`
+- 设备配置：`agt_ws/src/agt_driver/livox_ros_driver2/config/`
+- 自定义补充配置：`agt_ws/src/agt_driver/livox_ros_driver2/config/agt_driver_driver_config.yaml`
+
+### 常用启动命令
+构建单包：
+
+```bash
+colcon build --packages-select livox_ros_driver2
+```
+
+启动 MID360 驱动并打开 RViz：
+
+```bash
+source install/setup.bash
+ros2 launch livox_ros_driver2 rviz_MID360_launch.py
+```
+
+### MID360 网络配置约定
+当前工程中，Livox MID360 的网络配置主要在：
+
+`agt_ws/src/agt_driver/livox_ros_driver2/config/MID360_config.json`
+
+其中需要重点核对两类 IP：
+
+- `host_net_info.*_ip`
+  这组地址应填写接雷达那块电脑网卡的实际 IPv4 地址
+- `lidar_configs[].ip`
+  这组地址应填写 Livox MID360 设备当前真实 IP
+
+如果驱动日志中出现类似：
+
+`found lidar not defined in the user-defined config, ip: 192.168.1.xxx`
+
+通常表示：
+
+- 主机已经发现设备
+- 但 `lidar_configs[].ip` 没有写成设备当前真实 IP
+- 驱动因此无法为该设备分配索引，可能出现话题存在但 `Publisher count: 0`
+
+### 建议检查顺序
+当出现“有 `/livox/lidar` 话题但没有点云”的情况时，建议按下面顺序排查：
+
+1. 检查驱动日志里打印出的设备真实 IP
+2. 核对 `MID360_config.json` 中 `lidar_configs[].ip` 是否与日志一致
+3. 核对 `host_net_info.*_ip` 是否与本机有线网卡 IP 一致
+4. 重新启动驱动后检查：
+
+```bash
+source install/setup.bash
+ros2 topic info /livox/lidar -v
+ros2 topic hz /livox/lidar
+```
+
+正常情况下应看到：
+
+- `Publisher count: 1`
+- `/livox/lidar` 有稳定频率输出
+
+---
+
 ## 规划阶段
 
 ### 第一阶段
@@ -189,6 +273,11 @@ MID360 驱动 → FAST-LIO2 出里程计/点云 → 生成可用地图 → 让 N
   - 支持组合测试
   - 支持参数显示与调节
   - 支持参数保存与加载
+
+当前已在仓库中预留 FAST-LIO2 侧参数准备目录：
+
+- `agt_ws/src/agt_algorithm/fastlio2/README.md`
+- `agt_ws/src/agt_algorithm/fastlio2/config/mid360_fastlio2_template.yaml`
 
 ### 第二阶段
 **目标**：完成建图、重定位与导航链路增强，并逐步形成更稳定的实用方案。
@@ -243,4 +332,3 @@ MID360 驱动 → FAST-LIO2 出里程计/点云 → 生成可用地图 → 让 N
 - 面向不同底盘与传感器组合的导航基线工程
 - 面向比赛与科研项目的复用型基础框架
 - 面向实车部署、仿真验证与实验记录的一体化平台
-
