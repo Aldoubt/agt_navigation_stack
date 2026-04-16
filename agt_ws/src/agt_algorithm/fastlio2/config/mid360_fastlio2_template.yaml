@@ -5,32 +5,42 @@ common:
   time_offset_lidar_to_imu: 0.0
 
 preprocess:
-  # FAST-LIO official configs use lidar_type: 1 for Livox serial devices.
+  # FAST‑LIO 官方配置文件中，针对 Livox 系列激光雷达设备使用 lidar_type: 1
   lidar_type: 1
 
-  # MID360 tuning varies across forks. Start conservatively here and validate
-  # against the actual FAST-LIO2 implementation you bring in.
+  # MID360 的参数调校在不同代码分支中会有所差异。此处先采用保守参数，并结合你实际使用的 FAST-LIO2 版本进行验证。
   scan_line: 4
   blind: 0.5
+  timestamp_unit: 3
+  scan_rate: 30
+
+  # 是否启用按水平角裁剪点云。
+  # true 时，只保留 yaw_crop_min_deg 到 yaw_crop_max_deg 之间的点。
+  yaw_crop_enable: true
+
+  # 点云保留扇区的最小水平角，单位度。
+  # 以雷达坐标系 x 正方向为 0 度，逆时针为正。
+  yaw_crop_min_deg: -135.0
+
+  # 点云保留扇区的最大水平角，单位度。
+  # 这一组默认值表示：保留前方 270 度，屏蔽后方 90 度。
+  yaw_crop_max_deg: 135.0
 
 mapping:
-  # Initial IMU noise placeholders. Replace with calibrated values later.
+  #IMU 噪声初始占位值。后续请替换为标定后的数据。
   acc_cov: 0.1
   gyr_cov: 0.1
   b_acc_cov: 0.0001
   b_gyr_cov: 0.0001
 
-  # MID360 is a 360-degree LiDAR, so use a full horizontal FOV as the initial
-  # setting. Narrow this only if you intentionally crop the sensor FOV.
+  # MID360 是一款 360° 激光雷达，因此初始设置采用完整水平视场角。仅当你有意裁剪传感器视场角时，再将其收窄。
   fov_degree: 360.0
   det_range: 100.0
 
-  # First-pass integration strategy:
-  # start with identity rotation and zero translation, and evaluate whether
-  # the trajectory is stable before introducing refined LiDAR-IMU extrinsics.
+  # 初步配准 / 融合策略：先从单位旋转矩阵与零平移量开始，评估轨迹是否稳定后，再引入更精确的激光雷达 - IMU 外参。
   extrinsic_est_en: false
 
-  # First-pass LiDAR pose in IMU frame.
+  # IMU 坐标系下的激光雷达初始位姿
   extrinsic_T: [-0.011, -0.02329, 0.04412]
   extrinsic_R: [1.0, 0.0, 0.0,
                 0.0, 1.0, 0.0,
@@ -43,5 +53,54 @@ publish:
   scan_bodyframe_pub_en: true
 
 pcd_save:
+  # 是否启用 PCD 地图保存。
   pcd_save_en: true
+  # 每隔多少帧保存一次中间 PCD。
+  # -1 表示只在退出时保存累计后的整张地图。
   interval: -1
+
+pcd_to_nav2_map:
+  # 是否在保存 3D 点云地图后，自动继续生成 Nav2 可用的 2D 地图。
+  enable: true
+
+  # 2D 地图输出目录。留空则默认与 .pcd 放在同一目录。
+  output_dir: ""
+
+  # 输出地图名，不带扩展名。留空则默认沿用 .pcd 文件名主干。
+  save_map_name: ""
+
+  # 2D 栅格地图分辨率，单位 m/pixel。越小越精细。
+  resolution: 0.10
+
+  # 栅格内至少包含多少个障碍点才判定为占据。
+  min_points_per_cell: 1
+
+  # 障碍点相对地面的最小高度差，单位 m。
+  h_min: 0.10
+
+  # 障碍点相对地面的最大高度差，单位 m。
+  h_max: 1.50
+
+  # 转换前的体素降采样大小，单位 m。
+  downsample_leaf_size: 0.25
+
+  # PMF 地面分割最大窗口大小。
+  max_window_size: 32
+
+  # PMF 地面分割坡度阈值。
+  slope: 1.0
+
+  # PMF 初始距离阈值。
+  initial_distance: 0.3
+
+  # PMF 最大距离阈值。
+  max_distance: 2.5
+
+  # SOR 离群点滤波：参考邻居数。
+  mean_k: 20
+
+  # SOR 离群点滤波：标准差倍数阈值。
+  stddev_mul: 1.0
+
+  # 是否额外保存调试用中间点云。
+  save_all_cloud: false

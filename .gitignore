@@ -58,3 +58,7 @@ CATKIN_IGNORE
 # ROS 2 / colcon runtime and build logs
 *.log
 *.log.*
+
+# Generated map artifacts
+datasets/*.pgm
+datasets/*.yaml

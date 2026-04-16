@@ -1,0 +1,17 @@
+agt_pcd2pgm_node:
+  ros__parameters:
+    pcd_path: ""
+    output_dir: ""
+    save_map_name: ""
+    resolution: 0.10
+    min_points_per_cell: 1
+    h_min: 0.10
+    h_max: 1.50
+    downsample_leaf_size: 0.25
+    max_window_size: 32
+    slope: 1.0
+    initial_distance: 0.3
+    max_distance: 2.5
+    mean_k: 20
+    stddev_mul: 1.0
+    save_all_cloud: false
