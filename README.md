@@ -319,6 +319,132 @@ pcl_viewer /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pcd
 - `map_file_path` 所在目录是否可写
 - 激光雷达和 IMU 是否已经正常输入，地图点云是否已经累计
 
+### FAST-LIO2 扇区屏蔽测试与评价（MID360）
+
+当前工程已在 FAST-LIO2 的 `CustomMsg(AVIA)` 处理链路中补齐扇区裁剪逻辑，因此在以下常见配置下也能生效：
+
+- `preprocess.lidar_type: 1`
+- Livox 驱动 `xfer_format: 1`（`msg_MID360_launch.py` 默认值）
+
+建议使用同一段数据做 A/B 对照：
+
+- A 组（基线）：`yaw_crop_enable: false`
+- B 组（扇区屏蔽）：`yaw_crop_enable: true`，例如 `yaw_crop_min_deg: -135.0`，`yaw_crop_max_deg: 135.0`
+
+#### 1. 准备两份配置
+
+下面示例基于 `agt_mid360.yaml` 生成两份测试配置：
+
+```bash
+cd /home/yangxuan/agt_navigation_stack
+
+cp agt_ws/src/agt_algorithm/fastlio2/FAST_LIO_ROS2/config/agt_mid360.yaml \
+   agt_ws/src/agt_algorithm/fastlio2/FAST_LIO_ROS2/config/agt_mid360_ab_base.yaml
+
+cp agt_ws/src/agt_algorithm/fastlio2/FAST_LIO_ROS2/config/agt_mid360.yaml \
+   agt_ws/src/agt_algorithm/fastlio2/FAST_LIO_ROS2/config/agt_mid360_ab_crop.yaml
+```
+
+将两份文件分别调整为：
+
+- `agt_mid360_ab_base.yaml`
+  - `preprocess.yaw_crop_enable: false`
+  - `map_file_path: "/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map_ab_base.pcd"`
+- `agt_mid360_ab_crop.yaml`
+  - `preprocess.yaw_crop_enable: true`
+  - `preprocess.yaw_crop_min_deg: -135.0`
+  - `preprocess.yaw_crop_max_deg: 135.0`
+  - `map_file_path: "/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map_ab_crop.pcd"`
+
+说明：除上述项外，其余参数尽量保持一致（`point_filter_num`、`filter_size_surf`、`filter_size_map`、`dense_publish_en` 等），避免干扰结论。
+
+#### 2. 运行 A/B 对照（同路线或同一 rosbag）
+
+1. 启动 MID360 驱动：
+
+```bash
+cd /home/yangxuan/agt_navigation_stack/agt_ws
+source install/setup.bash
+ros2 launch livox_ros_driver2 msg_MID360_launch.py
+```
+
+2. 跑 A 组（基线）：
+
+```bash
+cd /home/yangxuan/agt_navigation_stack/agt_ws
+source install/setup.bash
+ros2 launch fast_lio agt_mid360.launch.py \
+  config_file:=/home/yangxuan/agt_navigation_stack/agt_ws/src/agt_algorithm/fastlio2/FAST_LIO_ROS2/config/agt_mid360_ab_base.yaml
+```
+
+建图结束后在 FAST-LIO2 终端 `Ctrl+C` 保存地图。
+
+3. 跑 B 组（扇区屏蔽）：
+
+```bash
+cd /home/yangxuan/agt_navigation_stack/agt_ws
+source install/setup.bash
+ros2 launch fast_lio agt_mid360.launch.py \
+  config_file:=/home/yangxuan/agt_navigation_stack/agt_ws/src/agt_algorithm/fastlio2/FAST_LIO_ROS2/config/agt_mid360_ab_crop.yaml
+```
+
+同样在结束时 `Ctrl+C` 保存地图。
+
+#### 3. 在线观测命令（建议两组都记录）
+
+```bash
+source /home/yangxuan/agt_navigation_stack/agt_ws/install/setup.bash
+
+ros2 topic hz /cloud_registered
+ros2 topic bw /cloud_registered
+ros2 topic hz /Laser_map
+ros2 topic bw /Laser_map
+```
+
+在 RViz 中应能观察到 B 组点云存在稳定扇区缺口。
+
+#### 4. 离线评价代码（点数/文件体积/保留率）
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+
+base = Path("/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map_ab_base.pcd")
+crop = Path("/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map_ab_crop.pcd")
+
+def read_points(p: Path) -> int:
+    with p.open("rb") as f:
+        for raw in f:
+            line = raw.decode("ascii", errors="ignore").strip()
+            if line.startswith("POINTS "):
+                return int(line.split()[1])
+            if line.startswith("DATA "):
+                break
+    raise RuntimeError(f"POINTS not found in {p}")
+
+bp = read_points(base)
+cp = read_points(crop)
+ratio = (cp / bp * 100.0) if bp else 0.0
+
+print(f"[BASE] file={base} size={base.stat().st_size/1024/1024:.2f}MB points={bp}")
+print(f"[CROP] file={crop} size={crop.stat().st_size/1024/1024:.2f}MB points={cp}")
+print(f"[KEEP] retained={ratio:.2f}%")
+PY
+```
+
+#### 5. 评价建议
+
+建议至少记录以下 3 类指标：
+
+- 计算开销：`/cloud_registered` 与 `/Laser_map` 的带宽变化（`topic bw`）
+- 地图密度：PCD 文件大小与 `POINTS` 点数
+- 导航可用性：关键结构（墙角、通道边界）是否完整，轨迹是否明显抖动
+
+实践中可用以下经验判据：
+
+- 若性能改善明显且定位稳定、地图关键结构未受明显破坏，则该扇区配置可用
+- 若出现定位退化，优先放宽扇区范围（例如由 270° 调到 300°）
+
 ---
 
 ## 规划阶段
@@ -401,4 +527,3 @@ MID360 驱动 → FAST-LIO2 出里程计/点云 → 生成可用地图 → 让 N
 - 面向不同底盘与传感器组合的导航基线工程
 - 面向比赛与科研项目的复用型基础框架
 - 面向实车部署、仿真验证与实验记录的一体化平台
-
