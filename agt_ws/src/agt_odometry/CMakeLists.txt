@@ -10,6 +10,7 @@ ament_python_install_package(${PROJECT_NAME}
 
 install(PROGRAMS
   src/${PROJECT_NAME}/odometry_node.py
+  src/${PROJECT_NAME}/lio_odom_bridge.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
