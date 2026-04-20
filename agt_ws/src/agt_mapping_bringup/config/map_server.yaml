@@ -3,7 +3,7 @@ map_server:
     use_sim_time: false
     frame_id: map
     topic_name: /map
-    yaml_filename: /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.yaml
+    yaml_filename: /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map_dense_manual.yaml
 
 lifecycle_manager_map:
   ros__parameters:

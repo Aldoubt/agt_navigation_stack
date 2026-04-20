@@ -1,12 +1,13 @@
 /icp_localization:
   ros__parameters:
-    pcd_file_path: "/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pcd"
+    pcd_file_path: "/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map_dense.pcd"
+    leaf_size: [0.5, 0.5, 0.5]
 
     icp_localization_ros2:
       range_data_topic: "/cloud_registered_body"
-      num_accumulated_range_data: 1
+      num_accumulated_range_data: 3
       imu_data_topic: "/livox/imu"
-      odometry_data_topic: "/Odometry"
+      odometry_data_topic: "/lio_odom"
       is_use_odometry: true
       is_provide_odom_frame: true
       gravity_vector_filter_time_constant: 0.01

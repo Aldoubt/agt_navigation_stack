@@ -6,7 +6,7 @@ twist_to_yhs_cmd_node:
     max_angular_velocity: 1.0
     steering_gain: 1.0
     cmd_timeout_sec: 0.3
-    publish_rate_hz: 20.0
+    publish_rate_hz: 30.0
     linear_deadband: 0.01
     angular_deadband: 0.01
     allow_reverse: false

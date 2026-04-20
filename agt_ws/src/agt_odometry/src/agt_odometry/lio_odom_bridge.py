@@ -26,6 +26,10 @@ class FastLioOdomBridge(Node):
         # FAST-LIO publishes child_frame_id as "body". For Nav2 compatibility
         # we bridge this to odom->base_link and keep lidar_mount from URDF.
         self.output_child = self.declare_parameter("output_child", "base_link").value
+        # If false, stamp bridged odom/tf with current ROS time to avoid
+        # TF_OLD_DATA when upstream sensor timestamps jump backwards.
+        self.use_input_stamp = self.declare_parameter("use_input_stamp", False).value
+        self._last_stamp_ns = 0
 
         self.tf_broadcaster = TransformBroadcaster(self)
         self.sub = self.create_subscription(Odometry, self.input_topic, self.cb, 50)
@@ -52,8 +56,29 @@ class FastLioOdomBridge(Node):
                 throttle_duration_sec=5.0,
             )
 
+        if self.use_input_stamp:
+            stamp_msg = msg.header.stamp
+            stamp_ns = int(stamp_msg.sec) * 1_000_000_000 + int(stamp_msg.nanosec)
+            # Guarantee strictly monotonic output stamp.
+            if stamp_ns <= self._last_stamp_ns:
+                stamp_ns = self._last_stamp_ns + 1
+                sec = stamp_ns // 1_000_000_000
+                nsec = stamp_ns % 1_000_000_000
+                stamp_msg.sec = int(sec)
+                stamp_msg.nanosec = int(nsec)
+                self.get_logger().warn(
+                    "Detected non-monotonic input odom stamp; adjusted to preserve TF order.",
+                    throttle_duration_sec=5.0,
+                )
+        else:
+            now = self.get_clock().now().to_msg()
+            stamp_msg = now
+            stamp_ns = int(now.sec) * 1_000_000_000 + int(now.nanosec)
+
+        self._last_stamp_ns = stamp_ns
+
         tf_msg = TransformStamped()
-        tf_msg.header.stamp = msg.header.stamp
+        tf_msg.header.stamp = stamp_msg
         tf_msg.header.frame_id = self.output_parent
         tf_msg.child_frame_id = self.output_child
         tf_msg.transform.translation.x = msg.pose.pose.position.x
@@ -65,6 +90,7 @@ class FastLioOdomBridge(Node):
         if self.pub is not None:
             out = Odometry()
             out.header = msg.header
+            out.header.stamp = stamp_msg
             out.header.frame_id = self.output_parent
             out.child_frame_id = self.output_child
             out.pose = msg.pose

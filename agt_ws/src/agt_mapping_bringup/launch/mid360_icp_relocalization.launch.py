@@ -27,7 +27,7 @@ def generate_launch_description():
     )
     declare_map_pcd = DeclareLaunchArgument(
         "map_pcd",
-        default_value="/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pcd",
+        default_value="/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map_dense.pcd",
         description="Global map PCD used by ICP",
     )
     declare_rviz = DeclareLaunchArgument("rviz", default_value="true")
@@ -51,6 +51,7 @@ def generate_launch_description():
             "enable_odom_bridge": "true",
             "bridge_publish_odom": "true",
             "bridge_output_child_frame": "base_link",
+            "bridge_use_input_stamp": "true",
         }.items(),
     )
 

@@ -22,8 +22,9 @@ def generate_launch_description():
     autostart = LaunchConfiguration("autostart")
     rviz = LaunchConfiguration("rviz")
     rviz_cfg = LaunchConfiguration("rviz_cfg")
+    enable_robot_state_publisher = LaunchConfiguration("enable_robot_state_publisher")
 
-    default_map_yaml = "/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.yaml"
+    default_map_yaml = "/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map_dense_manual.yaml"
     default_nav2_params = os.path.join(nav2_pkg, "config", "nav2_params.yaml")
     default_map_server_params = os.path.join(mapping_pkg, "config", "map_server.yaml")
     default_rviz_cfg = os.path.join(nav2_bringup_pkg, "rviz", "nav2_default_view.rviz")
@@ -37,6 +38,11 @@ def generate_launch_description():
     declare_autostart = DeclareLaunchArgument("autostart", default_value="true")
     declare_rviz = DeclareLaunchArgument("rviz", default_value="false")
     declare_rviz_cfg = DeclareLaunchArgument("rviz_cfg", default_value=default_rviz_cfg)
+    declare_enable_robot_state_publisher = DeclareLaunchArgument(
+        "enable_robot_state_publisher",
+        default_value="false",
+        description="Publish URDF TF tree via robot_state_publisher.",
+    )
 
     # Existing localization chain: livox + FAST-LIO + bridge + ICP(map->odom).
     localization_launch = IncludeLaunchDescription(
@@ -51,6 +57,7 @@ def generate_launch_description():
         executable="robot_state_publisher",
         name="robot_state_publisher",
         output="screen",
+        condition=IfCondition(enable_robot_state_publisher),
         parameters=[
             {
                 "use_sim_time": use_sim_time,
@@ -114,6 +121,7 @@ def generate_launch_description():
     ld.add_action(declare_autostart)
     ld.add_action(declare_rviz)
     ld.add_action(declare_rviz_cfg)
+    ld.add_action(declare_enable_robot_state_publisher)
     ld.add_action(localization_launch)
     ld.add_action(robot_state_publisher)
     ld.add_action(map_server)
