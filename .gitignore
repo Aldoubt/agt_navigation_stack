@@ -62,3 +62,6 @@ CATKIN_IGNORE
 # Generated map artifacts
 datasets/*.pgm
 datasets/*.yaml
+agt_ws/frames_2026-04-18_13.58.14.pdf
+agt_ws/frames_2026-04-18_13.58.14.gv
+agt_ws/src/agt_chassis_base/.~lock.使用说明.doc#

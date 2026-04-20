@@ -15,7 +15,7 @@ def generate_launch_description():
             DeclareLaunchArgument("input_topic", default_value="/Odometry"),
             DeclareLaunchArgument("output_topic", default_value="/lio_odom"),
             DeclareLaunchArgument("publish_odom", default_value="true"),
-            DeclareLaunchArgument("output_child", default_value="livox_frame"),
+            DeclareLaunchArgument("output_child", default_value="base_link"),
             Node(
                 package="agt_odometry",
                 executable="lio_odom_bridge.py",

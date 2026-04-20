@@ -445,6 +445,115 @@ PY
 - 若性能改善明显且定位稳定、地图关键结构未受明显破坏，则该扇区配置可用
 - 若出现定位退化，优先放宽扇区范围（例如由 270° 调到 300°）
 
+### MID360 实车导航模式使用说明（FAST-LIO2 + ICP + Nav2 + YHS CAN）
+
+可以，当前链路已经支持你描述的流程：
+
+1. 用 MID360 + FAST-LIO2 建图
+2. 生成并保存 `pcd` 与 `pgm+yaml`
+3. 切到导航模式，启动 ICP 重定位（`map -> odom`）
+4. 通过 bridge 补齐 `odom -> base_link`
+5. 由 URDF 提供 `base_link -> lidar_mount`
+6. Nav2 输出速度后转换为 `/ctrl_cmd` 发给 `yhs_can_control`
+
+#### A. 建图模式
+
+1. 启动雷达驱动：
+
+```bash
+cd /home/yangxuan/agt_navigation_stack/agt_ws
+source install/setup.bash
+ros2 launch livox_ros_driver2 msg_MID360_launch.py
+```
+
+2. 启动 FAST-LIO2 建图：
+
+```bash
+cd /home/yangxuan/agt_navigation_stack/agt_ws
+source install/setup.bash
+ros2 launch fast_lio agt_mid360.launch.py
+```
+
+3. 建图结束后在 FAST-LIO2 终端按 `Ctrl+C`，会自动保存地图。
+
+默认会在 `datasets/` 下得到：
+
+- `fastlio_mid360_map.pcd`
+- `fastlio_mid360_map.pgm`
+- `fastlio_mid360_map.yaml`
+
+#### B. 导航模式（实车最小闭环）
+
+先确认底盘 CAN 口可用（`can0` 必须存在）：
+
+```bash
+ip link show can0
+```
+
+若 `can0` 不存在，先完成你的底盘驱动配置后再继续（不同机器配置命令可能不同）。
+
+启动实车导航最小闭环：
+
+```bash
+cd /home/yangxuan/agt_navigation_stack/agt_ws
+source install/setup.bash
+ros2 launch agt_mapping_bringup mid360_nav2_oncar_minimal.launch.py
+```
+
+该 launch 会拉起：
+
+- Livox 驱动 + FAST-LIO2 + odom bridge + ICP
+- robot_state_publisher
+- map_server + Nav2
+- yhs_can_control
+- twist_to_yhs_cmd（`/cmd_vel -> /ctrl_cmd`）
+
+说明：
+
+- 该 launch 现在默认 `rviz:=true`
+- 默认 RViz 配置使用 Nav2 视图（便于观察 `/map`、costmap、路径和 TF）
+- 如需手动指定 RViz 配置，可在命令中追加：`rviz_cfg:=/absolute/path/to/xxx.rviz`
+
+#### C. 必要验收命令
+
+1. TF 主链：
+
+```bash
+source /home/yangxuan/agt_navigation_stack/agt_ws/install/setup.bash
+ros2 run tf2_ros tf2_echo map odom
+ros2 run tf2_ros tf2_echo odom base_link
+ros2 run tf2_ros tf2_echo base_link lidar_mount
+```
+
+2. 地图与代价地图：
+
+```bash
+ros2 topic echo /map --once
+ros2 topic echo /global_costmap/costmap --once
+ros2 topic echo /local_costmap/costmap --once
+```
+
+3. 速度链路（Nav2/手动到车控）：
+
+```bash
+ros2 topic echo /ctrl_cmd
+```
+
+可选发送测试速度：
+
+```bash
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
+  "{linear: {x: 0.2, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.15}}" -r 10
+```
+
+预期看到 `/ctrl_cmd` 先输出非零控制量，停止发 `/cmd_vel` 后自动回零（超时保护）。
+
+#### D. 说明
+
+- 当前系统约束为：`ICP` 是唯一 `map -> odom` 发布源，不要再加第二个来源。
+- 已将 bridge 对齐为 `odom -> base_link`，避免与 URDF 的 `lidar_mount` 关系冲突。
+- 若出现 `frame 'body'` 的点云消息滤除日志，通常是点云时间戳/帧一致性问题，建议后续在点云输入侧继续优化，但不影响最小闭环先跑通。
+
 ---
 
 ## 规划阶段

@@ -6,7 +6,6 @@ from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from tf2_ros import TransformBroadcaster
-from rclpy.exceptions import RCLError
 
 
 class FastLioOdomBridge(Node):
@@ -24,9 +23,9 @@ class FastLioOdomBridge(Node):
             "expected_input_child", "body"
         ).value
         self.output_parent = self.declare_parameter("output_parent", "odom").value
-        # FAST-LIO publishes child_frame_id as "body". In this project we
-        # temporarily interpret that pose as the LiDAR frame to match URDF.
-        self.output_child = self.declare_parameter("output_child", "livox_frame").value
+        # FAST-LIO publishes child_frame_id as "body". For Nav2 compatibility
+        # we bridge this to odom->base_link and keep lidar_mount from URDF.
+        self.output_child = self.declare_parameter("output_child", "base_link").value
 
         self.tf_broadcaster = TransformBroadcaster(self)
         self.sub = self.create_subscription(Odometry, self.input_topic, self.cb, 50)
@@ -84,7 +83,7 @@ def main(args=None) -> None:
     try:
         if rclpy.ok():
             rclpy.shutdown()
-    except RCLError:
+    except Exception:
         pass
 
 

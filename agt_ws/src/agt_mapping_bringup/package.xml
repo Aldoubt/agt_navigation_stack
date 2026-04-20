@@ -11,6 +11,18 @@
   <exec_depend>slam_toolbox</exec_depend>
   <exec_depend>cartographer</exec_depend>
   <exec_depend>cartographer_ros</exec_depend>
+  <exec_depend>fast_lio</exec_depend>
+  <exec_depend>livox_ros_driver2</exec_depend>
+  <exec_depend>icp_localization_ros2</exec_depend>
+  <exec_depend>agt_nav2</exec_depend>
+  <exec_depend>agt_acm_description</exec_depend>
+  <exec_depend>yhs_can_control</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>nav2_map_server</exec_depend>
+  <exec_depend>nav2_lifecycle_manager</exec_depend>
+  <exec_depend>rviz2</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
