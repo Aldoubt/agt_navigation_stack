@@ -38,7 +38,20 @@ ament_target_dependencies(
   "yhs_can_interfaces"
 )
 
+add_executable(twist_to_yhs_cmd_node src/twist_to_yhs_cmd_node.cpp)
+target_include_directories(twist_to_yhs_cmd_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_compile_features(twist_to_yhs_cmd_node PUBLIC c_std_99 cxx_std_17)
+ament_target_dependencies(
+  twist_to_yhs_cmd_node
+  "rclcpp"
+  "geometry_msgs"
+  "yhs_can_interfaces"
+)
+
 install(TARGETS yhs_can_control_node
+                twist_to_yhs_cmd_node
   DESTINATION lib/${PROJECT_NAME})
   
 install(DIRECTORY launch params

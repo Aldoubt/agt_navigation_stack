@@ -1,0 +1,13 @@
+map_server:
+  ros__parameters:
+    use_sim_time: false
+    frame_id: map
+    topic_name: /map
+    yaml_filename: /home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.yaml
+
+lifecycle_manager_map:
+  ros__parameters:
+    use_sim_time: false
+    autostart: true
+    node_names:
+      - map_server

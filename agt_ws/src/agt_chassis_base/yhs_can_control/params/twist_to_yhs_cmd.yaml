@@ -1,0 +1,16 @@
+twist_to_yhs_cmd_node:
+  ros__parameters:
+    input_twist_topic: "/cmd_vel"
+    output_ctrl_cmd_topic: "/ctrl_cmd"
+    max_linear_velocity: 0.8
+    max_angular_velocity: 1.0
+    steering_gain: 1.0
+    cmd_timeout_sec: 0.3
+    publish_rate_hz: 20.0
+    linear_deadband: 0.01
+    angular_deadband: 0.01
+    allow_reverse: false
+    forward_gear: 1
+    reverse_gear: 2
+    neutral_gear: 0
+    startup_neutral_publish: true

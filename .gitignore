@@ -1,6 +1,8 @@
 devel/
 logs/
+log/
 build/
+install/
 bin/
 lib/
 msg_gen/
@@ -49,3 +51,17 @@ qtcreator-*
 
 # Catkin custom files
 CATKIN_IGNORE
+
+# Local editor / assistant metadata
+.codex
+
+# ROS 2 / colcon runtime and build logs
+*.log
+*.log.*
+
+# Generated map artifacts
+datasets/*.pgm
+datasets/*.yaml
+agt_ws/frames_2026-04-18_13.58.14.pdf
+agt_ws/frames_2026-04-18_13.58.14.gv
+agt_ws/src/agt_chassis_base/.~lock.使用说明.doc#
