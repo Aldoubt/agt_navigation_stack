@@ -33,6 +33,7 @@
 
 - 第一版机器人 URDF 模型
 - 阿克曼底盘 CAN 通信与驱动文件
+- navigation2的配置文件参数规范
 
 后续工作将围绕导航链路打通、系统标准化与调试工具完善展开。
 
@@ -105,14 +106,16 @@ AGT_navigation_stack/
         │   ├── VehicleStatus.msg
         │   └── LocalizationState.msg
         ├── agt_nav2/                 # 导航配置层
-        │                             # 输入: /tf、/scan 或 PointCloud2
-        │                             # 关键坐标系: map、odom
-        │   ├── nav2_params.yaml
-        │   ├── planner 参数
-        │   ├── controller 参数
-        │   ├── costmap 参数
-        │   ├── behavior tree XML
-        │   └── map_server 配置
+        │   │                         # 关键坐标系: map、odom
+        │   │                         # 输入: /tf、/scan 或 PointCloud2                          
+        │   ├── config/               #导航配置
+        │   │   ├── agt_nav2_params.yaml
+        │   │   └── bt_navigator.xml
+        │   ├── launch/               #导航启动文件
+        │   │   └── agt_nav.launch.py
+        │   ├── maps/                 #地图
+        │       ├── map.pgm
+        │       └── map.yaml
         ├── agt_odometry/             # 连续运动估计层
         │                             # odom -> base_link
         │                             # EKF / UKF 等融合与滤波
