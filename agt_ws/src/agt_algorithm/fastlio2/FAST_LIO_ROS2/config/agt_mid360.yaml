@@ -1,0 +1,129 @@
+/**:
+    ros__parameters:
+        # MID360 warm-up note:
+        # Do not start mapping immediately after power-on.
+        # Let the LiDAR run for a while until its internal temperature becomes
+        # more stable, otherwise FAST-LIO may show very obvious drift.
+        feature_extract_enable: false
+        point_filter_num: 3
+        max_iteration: 3
+        filter_size_surf: 0.5
+        filter_size_map: 0.5
+        cube_side_length: 1000.0
+        runtime_pos_log_enable: false
+        # map_file_path: "./fastlio_mid360_map.pcd"
+        # 请将 map_file_path 替换为你实际使用的 FAST-LIO2 版本中对应的地图文件路径。确保该路径正确指向你的地图文件，以便 FAST-LIO2 能够正确加载和使用地图数据。
+        map_file_path: "/home/yangxuan/agt_navigation_stack/datasets/fastlio_mid360_map.pcd"
+
+        common:
+            lid_topic: "/livox/lidar"
+            imu_topic: "/livox/imu"
+            # Keep disabled here. With MID360 driver in this stack, enabling
+            # FAST-LIO self sync can produce lidar loop-back timestamps and
+            # trigger TF_OLD_DATA / queue-full drops in RViz/Nav2.
+            time_sync_en: false
+            time_offset_lidar_to_imu: 0.0
+
+        preprocess:
+            lidar_type: 1
+            scan_line: 4
+            blind: 0.5
+            timestamp_unit: 3
+            scan_rate: 30
+            # 是否启用按水平角裁剪点云。
+            # true 时，只保留 yaw_crop_min_deg 到 yaw_crop_max_deg 之间的点。
+            yaw_crop_enable: false
+            # 点云保留扇区的最小水平角，单位度。
+            # 以雷达坐标系 x 正方向为 0 度，逆时针为正。
+            yaw_crop_min_deg: -135.0
+            # 点云保留扇区的最大水平角，单位度。
+            # 当前配置等价于仅保留前方 270 度，屏蔽后方 90 度。
+            yaw_crop_max_deg: 135.0
+
+        mapping:
+            acc_cov: 0.1
+            gyr_cov: 0.1
+            b_acc_cov: 0.0001
+            b_gyr_cov: 0.0001
+            fov_degree: 360.0
+            det_range: 100.0
+            extrinsic_est_en: false
+            extrinsic_T: [ -0.011, -0.02329, 0.04412 ]
+            extrinsic_R: [ 1.0, 0.0, 0.0,
+                           0.0, 1.0, 0.0,
+                           0.0, 0.0, 1.0 ]
+
+        publish:
+            path_en: true
+            effect_map_en: false
+            map_en: true
+            scan_publish_en: true
+            dense_publish_en: false
+            scan_bodyframe_pub_en: true
+
+        pcd_save:
+            # 是否启用 PCD 地图保存。
+            pcd_save_en: true
+            # 每隔多少帧保存一次中间 PCD。
+            # -1 表示只累计整张地图，并在退出时保存为一个文件。
+            interval: -1
+
+        pcd_to_nav2_map:
+            # 是否在保存完 3D 点云地图后，继续自动生成 Nav2 可用的 2D 地图。
+            enable: true
+
+            # 2D 地图输出目录。
+            # 留空时，默认输出到 map_file_path 所在目录，也就是和 .pcd 放在同一路径下。
+            output_dir: ""
+
+            # 输出地图文件名，不带扩展名。
+            # 留空时，默认沿用 .pcd 文件名主干，例如 fastlio_mid360_map.pcd
+            # 会生成 fastlio_mid360_map.pgm 和 fastlio_mid360_map.yaml。
+            save_map_name: ""
+
+            # 2D 栅格地图分辨率，单位 m/pixel。
+            # 数值越小，地图越精细，但文件更大、噪声也更容易显现。
+            resolution: 0.10
+
+            # 单个栅格内至少需要多少个障碍点，才判定为占据。
+            # 数值越大，地图越干净，但细小障碍更容易被滤掉。 2～4
+            min_points_per_cell: 1
+
+            # 障碍点相对地面的最小高度差，单位 m。
+            # 太小会把地面起伏、低矮噪点也当成障碍。0.12～0.20
+            h_min: 0.10
+
+            # 障碍点相对地面的最大高度差，单位 m。
+            # 用于限制过高的结构不要进入 2D 地图。
+            h_max: 1.50
+
+            # 转 2D 地图前对 3D 点云做体素降采样的叶子尺寸，单位 m。
+            # 越大越平滑、越快，但细节更少。0.10～0.15 是比较常用的选择。
+            downsample_leaf_size: 0.10
+
+            # PMF 地面分割参数：最大窗口大小。
+            # 地面起伏较大时，可适当增大。
+            max_window_size: 32
+
+            # PMF 地面分割参数：地面坡度阈值。
+            # 地面有坡度时可适当调大。
+            slope: 1.0
+
+            # PMF 地面分割参数：初始距离阈值。
+            # 影响最开始的地面点判定宽松程度。
+            initial_distance: 0.3
+
+            # PMF 地面分割参数：最大距离阈值。
+            # 数值越大，越容易把起伏表面当成地面。
+            max_distance: 2.5
+
+            # SOR 离群点滤波参数：每个点统计时参考的邻居数量。
+            mean_k: 20
+
+            # SOR 离群点滤波参数：标准差倍数阈值。
+            # 越小去噪越强，越大保留的点越多。
+            stddev_mul: 1.0
+
+            # 是否额外保存调试用的中间点云：
+            # 下采样点云、地面点云、非地面点云、障碍点云。
+            save_all_cloud: true
