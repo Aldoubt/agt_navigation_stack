@@ -65,3 +65,9 @@ datasets/*.yaml
 agt_ws/frames_2026-04-18_13.58.14.pdf
 agt_ws/frames_2026-04-18_13.58.14.gv
 agt_ws/src/agt_chassis_base/.~lock.使用说明.doc#
+
+# Vendored dependency docs / demo assets kept locally but excluded from VCS
+agt_ws/src/agt_algorithm/fastlio2/FAST_LIO_ROS2/doc/
+third_party/patchwork-plusplus/pictures/
+third_party/patchwork-plusplus/data/
+agt_ws/src/icp_localization_ros2/doc/

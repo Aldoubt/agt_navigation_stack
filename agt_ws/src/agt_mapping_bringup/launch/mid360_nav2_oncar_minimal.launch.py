@@ -60,7 +60,7 @@ def generate_launch_description():
     )
     declare_io_enable_rate_hz = DeclareLaunchArgument(
         "io_enable_rate_hz",
-        default_value="10.0",
+        default_value="2.0",
         description="Publish rate for auto IO enable publisher.",
     )
     declare_can_params = DeclareLaunchArgument(
@@ -122,7 +122,7 @@ def generate_launch_description():
             "-r",
             io_enable_rate_hz,
         ],
-        output="screen",
+        output="log",
         condition=IfCondition(auto_enable_io),
     )
 

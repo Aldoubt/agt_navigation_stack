@@ -642,4 +642,5 @@ MID360 驱动 → FAST-LIO2 出里程计/点云 → 生成可用地图 → 让 N
 
 
   sudo  ip  link  set  can0  up  type  can  bitrate  500000
+  ros2 launch yhs_can_control yhs_can_control.launch.py
 
